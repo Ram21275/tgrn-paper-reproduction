@@ -91,13 +91,15 @@ The equivalent command is:
 
 ```bash
 python train.py \
-  --config configs/mosi.json \
+  --config configs/mosi_complete.json \
   --data /kaggle/input/datasets/ramdabas/ann-proj/unaligned_50.pkl \
   --output /kaggle/working/tgrn-mosi
 ```
 
-For CH-SIMS, use `configs/sims.json`. The best validation checkpoint is saved as
-`best.pt`; early stopping patience defaults to the paper's reported 8 epochs.
+This complete-modality config is the appropriate comparison with Table II. Use
+`configs/mosi.json` for the separate 20%-missing experiment. For CH-SIMS, use
+`configs/sims.json`. The best validation checkpoint is saved as `best.pt`;
+early stopping patience defaults to the paper's reported 8 epochs.
 
 The result JSON contains all eight MOSI metrics used in Table II: MAE,
 correlation, Has0/Non0 accuracy and weighted F1, and 5-/7-class accuracy. Compare
