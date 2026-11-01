@@ -90,7 +90,7 @@ The equivalent command is:
 ```bash
 python train.py \
   --config configs/mosi.json \
-  --data /kaggle/input/YOUR_DATASET/unaligned.pkl \
+  --data /kaggle/input/datasets/ramdabas/ann-proj/unaligned_50.pkl \
   --output /kaggle/working/tgrn-mosi
 ```
 
