@@ -8,6 +8,7 @@ import numpy as np
 from tgrn import TgRN, TgRNConfig
 from tgrn.data import MultimodalPickleDataset
 from tgrn.masking import apply_random_missingness
+from tgrn.metrics import regression_metrics
 
 
 def test_forward_and_backward() -> None:
@@ -67,3 +68,16 @@ def test_dataset_uses_bert_attention_mask() -> None:
     assert sample["text_valid"].tolist() == [True, True, True, False]
     assert sample["audio_valid"].tolist() == [True, True, False]
     assert sample["vision_valid"].tolist() == [True, True, True, True, False]
+
+
+def test_mosi_metrics_match_reference_definitions() -> None:
+    target = np.array([-3.0, -1.0, 0.0, 1.0, 3.0])
+    prediction = np.array([-2.6, 0.2, -0.1, 0.8, 2.7])
+    metrics = regression_metrics(prediction, target)
+    assert metrics["mult_acc7"] == 0.8
+    assert metrics["mult_acc5"] == 0.8
+    assert metrics["has0_acc2"] == 0.6
+    assert metrics["non0_acc2"] == 0.75
+    # Weighted F1 differs from the positive-class-only score used previously.
+    assert np.isclose(metrics["has0_f1"], 0.6)
+    assert np.isclose(metrics["non0_f1"], 0.7333333333333334)

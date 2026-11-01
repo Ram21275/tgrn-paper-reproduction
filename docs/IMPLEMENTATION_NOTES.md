@@ -3,7 +3,7 @@
 This repository separates statements made explicitly by the paper from choices
 required to obtain executable code.
 
-## Directly implemented from the paper
+## Components implemented from the paper equations
 
 | Paper component | Equations | Implementation |
 |---|---:|---|
@@ -16,6 +16,10 @@ required to obtain executable code.
 | modality gates and bounded shift | 24-31 | `PMAG`, `TextGuidedFusionModule` |
 | MLP sentiment regressor | 32 | `TextGuidedFusionModule.classifier` |
 | L1 task + weighted reconstruction | 33-34 | `TgRN.loss` |
+
+This table means that the published mathematical operations are represented in
+code. It does **not** mean that undocumented tensor reshapes, layer counts, or
+hyperparameters are identical to the authors' private implementation.
 
 ## Explicit reproduction choices
 
@@ -38,6 +42,19 @@ The following details are not completely specified in the article:
   to reconstruction loss.
 - **Optimization:** learning rate `1e-4`, weight decay `1e-4`, gradient clipping
   at 1.0, configurable batch size.
+
+## Evaluation protocol
+
+`regression_metrics` follows the metric code in the public TFR-Net repository,
+from which the TgRN repository was forked:
+
+- MAE and Pearson correlation use the raw continuous labels.
+- MultAcc-7 clips to `[-3, 3]`, rounds, and measures exact agreement.
+- MultAcc-5 clips to `[-2, 2]`, rounds, and measures exact agreement.
+- Has0 uses `>= 0`; Non0 removes true zeros and uses `> 0`.
+- Both binary F1 values are support-weighted across the negative and positive
+  classes. Older revisions of this repository incorrectly reported only the
+  positive-class F1; those old F1 results should not be compared with Table II.
 
 These choices should be tuned only on the validation split. Keep them fixed when
 reporting the test set.

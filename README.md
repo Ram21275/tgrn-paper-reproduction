@@ -9,11 +9,13 @@ The repository is designed for two goals:
 1. make the paper's TEM -> RM -> TFM pipeline understandable; and
 2. run training on Kaggle with precomputed CMU-MOSI or CH-SIMS features.
 
-> Reproduction status: the model equations and training objective are
-> implemented and tested. This is not a claim of exact numerical reproduction:
-> the paper and the authors' public repository do not provide the full model
-> source or every architecture hyperparameter. All explicit reproduction choices
-> are documented in [docs/IMPLEMENTATION_NOTES.md](docs/IMPLEMENTATION_NOTES.md).
+> Reproduction status: **paper-faithful, not author-code-exact**. The published
+> equations and training objective are implemented and tested, and the MOSI
+> metric definitions match the authors' public parent implementation. Exact
+> numerical reproduction is not currently possible because the TgRN model code
+> and several architecture-defining choices were not published. See the
+> [reproducibility audit](docs/REPRODUCIBILITY_AUDIT.md) and
+> [implementation assumptions](docs/IMPLEMENTATION_NOTES.md).
 
 ## Architecture at a glance
 
@@ -97,6 +99,17 @@ python train.py \
 For CH-SIMS, use `configs/sims.json`. The best validation checkpoint is saved as
 `best.pt`; early stopping patience defaults to the paper's reported 8 epochs.
 
+The result JSON contains all eight MOSI metrics used in Table II: MAE,
+correlation, Has0/Non0 accuracy and weighted F1, and 5-/7-class accuracy. Compare
+a complete-modality run directly with the paper using:
+
+```bash
+python scripts/compare_with_paper.py /kaggle/working/tgrn-mosi/test_metrics.json
+```
+
+The paper's complete-modality result is the average of five runs, so a fair
+comparison also needs five independent runs rather than the best test result.
+
 ## Missing-modality experiments
 
 `missing_rates` in the JSON config independently masks valid time steps in text,
@@ -113,6 +126,8 @@ modality removal and to `0.0` for the complete-modality setting.
 - `train.py` - training, validation, checkpointing, and early stopping
 - `docs/PAPER_WALKTHROUGH.md` - plain-language explanation of the paper
 - `docs/IMPLEMENTATION_NOTES.md` - equation-to-code map and assumptions
+- `docs/REPRODUCIBILITY_AUDIT.md` - exact-reproduction feasibility audit
+- `scripts/compare_with_paper.py` - Table II comparison for a result JSON
 - `tests/` - forward, masking, reconstruction, and gradient checks
 
 ## References and attribution
