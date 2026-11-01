@@ -65,7 +65,9 @@ must contain:
 ```
 
 `text` must be precomputed embeddings, not BERT token IDs. This keeps training
-offline-friendly on Kaggle. The paper uses 768-dimensional BERT features. Its
+offline-friendly on Kaggle. When `text_bert` is present, its attention-mask row
+is used automatically to exclude padded text positions. The paper uses
+768-dimensional BERT features. Its
 reported dimensions are:
 
 | Dataset | Text | Audio | Vision | Label range |

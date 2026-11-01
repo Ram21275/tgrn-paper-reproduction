@@ -7,8 +7,8 @@ __pycache__/
 venv/
 outputs/
 checkpoints/
-data/*.pkl
-data/*.pickle
+*.pkl
+*.pickle
 graphify-out/
 tmp/
 Text-Guided_Reconstruction_Network_for_Sentiment_Analysis_With_Uncertain_Missing_Modalities.pdf

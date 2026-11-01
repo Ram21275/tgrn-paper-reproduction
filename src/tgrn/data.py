@@ -34,6 +34,16 @@ class MultimodalPickleDataset(Dataset[dict[str, Tensor]]):
         if text.ndim != 3:
             raise ValueError("`text` must contain precomputed embeddings with shape [N,T,D]")
         self.text = _as_float_tensor(text)
+        text_bert = data.get("text_bert")
+        if text_bert is not None:
+            text_bert = np.asarray(text_bert)
+            if text_bert.ndim != 3 or text_bert.shape[1] < 2:
+                raise ValueError("`text_bert` must have shape [N,3,T] when provided")
+            if text_bert.shape[0] != text.shape[0] or text_bert.shape[2] != text.shape[1]:
+                raise ValueError("`text_bert` attention mask does not match `text` dimensions")
+            self.text_valid = torch.from_numpy(text_bert[:, 1, :].astype(np.bool_))
+        else:
+            self.text_valid = self.text.abs().sum(dim=-1).ne(0)
         self.audio = _as_float_tensor(data["audio"])
         self.vision = _as_float_tensor(data["vision"])
         labels = data.get("regression_labels", data.get("labels"))
@@ -60,7 +70,7 @@ class MultimodalPickleDataset(Dataset[dict[str, Tensor]]):
             "text": text,
             "audio": audio,
             "vision": vision,
-            "text_valid": self._valid_mask(text, None),
+            "text_valid": self.text_valid[index],
             "audio_valid": self._valid_mask(audio, None if self.audio_lengths is None else self.audio_lengths[index]),
             "vision_valid": self._valid_mask(vision, None if self.vision_lengths is None else self.vision_lengths[index]),
             "label": self.labels[index],

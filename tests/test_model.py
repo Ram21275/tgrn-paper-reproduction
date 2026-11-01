@@ -1,6 +1,12 @@
 import torch
+import pickle
+import tempfile
+from pathlib import Path
+
+import numpy as np
 
 from tgrn import TgRN, TgRNConfig
+from tgrn.data import MultimodalPickleDataset
 from tgrn.masking import apply_random_missingness
 
 
@@ -35,3 +41,29 @@ def test_padding_masks_are_supported() -> None:
         vision_valid=torch.tensor([[1, 1, 1, 0, 0, 0], [1, 1, 1, 1, 1, 1]], dtype=torch.bool),
     )
     assert torch.isfinite(output.prediction).all()
+
+
+def test_dataset_uses_bert_attention_mask() -> None:
+    split = {
+        "text": np.ones((2, 4, 6), dtype=np.float32),
+        "text_bert": np.array(
+            [
+                [[101, 10, 102, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
+                [[101, 11, 12, 102], [1, 1, 1, 1], [0, 0, 0, 0]],
+            ],
+            dtype=np.int64,
+        ),
+        "audio": np.ones((2, 3, 2), dtype=np.float32),
+        "vision": np.ones((2, 5, 3), dtype=np.float32),
+        "audio_lengths": np.array([2, 3]),
+        "vision_lengths": np.array([4, 5]),
+        "regression_labels": np.array([-1.0, 1.0], dtype=np.float32),
+    }
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "features.pkl"
+        with path.open("wb") as stream:
+            pickle.dump({"train": split}, stream)
+        sample = MultimodalPickleDataset(path, "train")[0]
+    assert sample["text_valid"].tolist() == [True, True, True, False]
+    assert sample["audio_valid"].tolist() == [True, True, False]
+    assert sample["vision_valid"].tolist() == [True, True, True, True, False]
